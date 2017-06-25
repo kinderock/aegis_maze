@@ -45,7 +45,7 @@ var game = new Phaser.Game(TOTAL_WIDTH, TOTAL_HEIGHT, Phaser.AUTO, 'maze', {
 		this.aegis = game.add.sprite(0, 0, 'aegis');
 		this.game.physics.box2d.enable(this.aegis);
 		this.aegis.body.fixedRotation = true;
-		// this.aegis.body.setCircle(AEGIS_SIZE);
+		this.aegis.body.setCircle(CELL_SIZE / 2 - 1);
 		this.aegis.body.collideWorldBounds = true;
 		// this.aegis.body.bounce.setTo(1, 1);
 		// console.log(this.aegis);
@@ -54,7 +54,7 @@ var game = new Phaser.Game(TOTAL_WIDTH, TOTAL_HEIGHT, Phaser.AUTO, 'maze', {
 	},
 
 	render: function render() {
-		this.game.debug.box2dWorld(); // For debug
+		// this.game.debug.box2dWorld(); // For debug
 	},
 
 	update: function update() {
@@ -90,3 +90,4 @@ var game = new Phaser.Game(TOTAL_WIDTH, TOTAL_HEIGHT, Phaser.AUTO, 'maze', {
 
 // https://github.com/TinkoffCreditSystems/holyjsgame-2017/blob/master/src/states/GameState.js
 // https://phaser.io/examples/v2/p2-physics/tilemap
+// http://www.html5gamedevs.com/topic/14971-hide-portions-of-tilemap-fog-of-war/
