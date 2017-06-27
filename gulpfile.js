@@ -22,10 +22,10 @@ gulp.task('styles', () => {
 			compress: true
 		}))
 		.pipe(gulp.dest(path.css))
-		.pipe(autoprefixer({
-			browsers: ['last 2 versions'],
-			cascade: false
-		}))
+		// .pipe(autoprefixer({
+		// 	browsers: ['last 2 versions'],
+		// 	cascade: false
+		// }))
 		.pipe(reload({stream:true}));
 });
 

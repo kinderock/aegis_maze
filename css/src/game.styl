@@ -8,22 +8,36 @@ body
 	background #000 url('/images/bg_body.jpg') 50% 0 repeat
 	// background #fff
 	font-family: 'Architects Daughter', cursive, Arial;
+	font-size 18px
 
 h1
 	font-size 40px
 	font-weight normal
 
 .game
-	margin 100px auto 0
+	margin 30px auto 0
 	text-align center
 	color #fff
 	user-select none
+
+	&__options
+		margin 0 auto 10px
+		text-align right
+		width 90%
+	& .option
+		display inline-block
+		margin-left 20px
+		& span
+			display inline-block
+		& .timer
+			width 80px
+			text-align left
 
 
 .maze
 	border 10px solid #946538
 	display inline-block
-	margin 50px auto 0
+	margin 0 auto
 	& canvas
 		margin auto
 //   display flex
