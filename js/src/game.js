@@ -1,9 +1,12 @@
 var game_settings = {
+	aegis_haste: false,
 	start_game: false,
 	start_cell: null,
 	game_timer: null,
 	total_scores: 0,
 	time_to_scores: 10,
+	haste_time: 10,
+	floors: null,
 
 	preload: function() {
 		this.game.load.image('aegis', '/images/aegis_26.png');
@@ -44,9 +47,11 @@ var game_settings = {
 			}
 		}
 
+		this.floors = floorsGroup;
+
 
 		// Берем рандомную ячейку с полом, чтобы отрисовать на ней Аегис
-		this.start_cell = this.getRandomFloor(floorsGroup);
+		this.start_cell = this.getRandomFloor(this.floors);
 
 
 		// Создаем и описываем Аегис
@@ -62,17 +67,10 @@ var game_settings = {
 
 
 		// Создаем баунти руну
-		let br_cell = this.getRandomFloor(floorsGroup);
-		this.bounty_rune = this.game.add.sprite(br_cell.position.x + CELL_SIZE / 2, br_cell.position.y + CELL_SIZE / 2, 'bounty_rune');
-		this.game.physics.box2d.enable(this.bounty_rune);
-		this.bounty_rune.body.fixedRotation = true;
-
+		this.drawRunes('bounty_rune');
 
 		// Создаем хаст руну
-		let hr_cell = this.getRandomFloor(floorsGroup);
-		this.haste_rune = this.game.add.sprite(hr_cell.position.x + CELL_SIZE / 2, hr_cell.position.y + CELL_SIZE / 2, 'haste_rune');
-		this.game.physics.box2d.enable(this.haste_rune);
-		this.haste_rune.body.fixedRotation = true;
+		this.drawRunes('haste_rune');
 
 
 		// Создаем отслеживание нажатий на клавиатуру
@@ -86,7 +84,7 @@ var game_settings = {
 
 
 	update: function() {
-		let speed = 400;
+		let speed = (this.aegis_haste) ? 400 : 200;
 
 		this.aegis.body.setZeroVelocity();
 
@@ -109,14 +107,6 @@ var game_settings = {
 	},
 
 
-	updateScores: function(bounty) {
-		let score_value = (bounty) ? 5 : 1;
-
-		this.total_scores += score_value;
-		document.getElementById('scores').innerHTML = this.total_scores;
-	},
-
-
 	startTimer: function() {
 		let _game = this,
 				passed_time = 0,
@@ -130,7 +120,7 @@ var game_settings = {
 			let seconds   = Math.floor((passed_time / 100) % 60);
 			let minutes   = Math.floor(passed_time / 6000);
 
-			if (passed_time % (time_to_scores*100) == 0) game_settings.updateScores(false);
+			if (passed_time % (time_to_scores*100) == 0) game_settings.handlerUpdateScores(false);
 
 			if (mlseconds < 10) {mlseconds = "0" + mlseconds;}
 			if (seconds   < 10) {seconds   = "0" + seconds;}
@@ -143,7 +133,77 @@ var game_settings = {
 
 	getRandomFloor: function(floors) {
 		return floors.children[Math.floor(Math.random()*floors.children.length)];
-	}
+	},
+
+
+	drawRunes: function(rune) {
+		let _game = this;
+
+		let rune_obj = null,
+				rune_type = '',
+				rune_callback = null,
+				rune_cell = this.getRandomFloor(_game.floors);
+
+		switch (rune) {
+			case 'bounty_rune':
+				rune_type = rune;
+				rune_callback = _game.collectBountyRune;
+				break;
+			case 'haste_rune':
+				rune_type = rune;
+				rune_callback = _game.collectHasteRune;
+				break;
+		}
+
+		rune_obj = this.game.add.sprite(rune_cell.position.x + CELL_SIZE / 2, rune_cell.position.y + CELL_SIZE / 2, rune_type);
+		_game.game.physics.box2d.enable(rune_obj);
+		rune_obj.body.fixedRotation = true;
+		_game.aegis.body.setBodyContactCallback(rune_obj, rune_callback, this);
+	},
+
+
+	collectBountyRune: function(body1, body2, fixture1, fixture2, begin) {
+		if (!begin) return;
+
+		let _game = this;
+
+		this.handlerUpdateScores(true);
+		body2.sprite.destroy();
+
+		setTimeout(function() {
+			_game.drawRunes('bounty_rune');
+		}, 5000);
+	},
+
+
+	collectHasteRune: function(body1, body2, fixture1, fixture2, begin) {
+		if (!begin) return;
+
+		this.handlerSetHaste();
+		body2.sprite.destroy();
+	},
+
+
+	handlerUpdateScores: function(bounty) {
+		let score_value = (bounty) ? 5 : 1;
+
+		this.total_scores += score_value;
+		document.getElementById('scores').innerHTML = this.total_scores;
+	},
+
+
+	handlerSetHaste: function(bounty) {
+		let _game = this;
+
+		this.aegis_haste = true;
+		setTimeout(function(){
+			_game.aegis_haste = false;
+
+			setTimeout(function() {
+				_game.drawRunes('haste_rune');
+			}, 5000);
+		}, this.haste_time * 1000);
+	},
 
 
 };
