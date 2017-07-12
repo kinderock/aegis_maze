@@ -21,9 +21,13 @@ var game_settings = {
 	time_to_scores: 10,
 	haste_time: 10,
 	floors: null,
+	map: null,
+	basic_speed: 200,
+	enemies: [],
 
 	preload: function preload() {
 		this.game.load.image('aegis', '/images/aegis_26.png');
+		this.game.load.image('enemy', '/images/enemy_26.png');
 		this.game.load.image('water', '/images/water_34.jpg');
 		this.game.load.image('ground', '/images/ground_34.jpg');
 		this.game.load.image('bounty_rune', '/images/bounty_rune_32.png');
@@ -32,7 +36,7 @@ var game_settings = {
 
 	create: function create() {
 		// Получаем данные для лабиринта
-		var map = getMaze(false);
+		this.map = getMaze(false);
 
 		// Создаем группы под пол и воду
 		var wallsGroup = this.game.add.physicsGroup(Phaser.Physics.BOX2D);
@@ -48,7 +52,7 @@ var game_settings = {
 		// Заводим в группы стены и пол
 		for (var y = 0; y < CELL_HEIGHT; y++) {
 			for (var x = 0; x < CELL_WIDTH; x++) {
-				if (map[x][y] === WALL) {
+				if (this.map[x][y] === WALL) {
 					var wall = wallsGroup.create(x * CELL_SIZE + CELL_SIZE / 2, y * CELL_SIZE + CELL_SIZE / 2, "water");
 					wall.body.static = true;
 				} else {
@@ -79,6 +83,9 @@ var game_settings = {
 		// Создаем хаст руну
 		this.drawRunes('haste_rune');
 
+		// Создаем хаст руну
+		this.drawEnemy();
+
 		// Создаем отслеживание нажатий на клавиатуру
 		this.cursors = this.game.input.keyboard.createCursorKeys();
 	},
@@ -88,7 +95,8 @@ var game_settings = {
 	},
 
 	update: function update() {
-		var speed = this.aegis_haste ? 400 : 200;
+		var speed = this.aegis_haste ? this.basic_speed * 2 : this.basic_speed;
+		var _game = this;
 
 		this.aegis.body.setZeroVelocity();
 
@@ -107,6 +115,12 @@ var game_settings = {
 		if (!this.start_game && (this.aegis.position.x !== this.aegis.start_position.x || this.aegis.position.y !== this.aegis.start_position.y)) {
 			this.start_game = true;
 			this.startTimer();
+		}
+
+		if (this.start_game) {
+			this.enemies.forEach(function (enemy) {
+				_game.enemyMove(enemy, _game.enemyGetPossibleWay(enemy));
+			});
 		}
 	},
 
@@ -166,6 +180,81 @@ var game_settings = {
 		_game.game.physics.box2d.enable(rune_obj);
 		rune_obj.body.fixedRotation = true;
 		_game.aegis.body.setBodyContactCallback(rune_obj, rune_callback, this);
+	},
+
+	drawEnemy: function drawEnemy() {
+		// https://github.com/bxia/Javascript-Pacman/blob/master/Ghost.js
+		var _game = this;
+
+		var enemy = null,
+		    enemy_callback = _game.detectEnemy,
+		    enemy_cell = this.getRandomFloor(_game.floors);
+
+		enemy = this.game.add.sprite(enemy_cell.position.x + CELL_SIZE / 2, enemy_cell.position.y + CELL_SIZE / 2, 'enemy');
+		_game.game.physics.box2d.enable(enemy);
+		enemy.body.fixedRotation = true;
+		enemy.body.setCircle(CELL_SIZE / 2 - 1);
+		enemy.body.collideWorldBounds = true;
+		enemy.move_direction = null;
+		_game.aegis.body.setBodyContactCallback(enemy, enemy_callback, this);
+
+		_game.enemies.push(enemy);
+	},
+
+	detectEnemy: function detectEnemy() {
+		console.log('ssss dddd');
+	},
+
+	enemyGetPossibleWay: function enemyGetPossibleWay(unit) {
+		var nearby_cells = {},
+		    possible_way = [],
+		    cell_x = Math.floor(unit.position.x / CELL_SIZE),
+		    cell_y = Math.floor(unit.position.y / CELL_SIZE);
+		console.log('cell_x', cell_x);
+		console.log('cell_y', cell_y);
+		nearby_cells['left'] = this.map[cell_x - 1][cell_y];
+		nearby_cells['right'] = this.map[cell_x + 1][cell_y];
+		nearby_cells['top'] = this.map[cell_x][cell_y - 1];
+		nearby_cells['bottom'] = this.map[cell_x][cell_y + 1];
+
+		for (var cell in nearby_cells) {
+			if (nearby_cells[cell] === 'floor') possible_way.push(cell);
+		}
+
+		return possible_way;
+	},
+
+	enemyMove: function enemyMove(unit, possible_way) {
+		var direction = unit.move_direction || null;
+		console.log('possible_way ->', possible_way);
+
+		if (!direction) {
+			direction = possible_way[Math.floor(Math.random() * possible_way.length)];
+			unit.move_direction = direction;
+		} else {
+			if (possible_way.filter(function (way) {
+				return way === direction;
+			}).length == 0) {
+				unit.move_direction = null;
+			}
+		}
+
+		console.log('direction --', direction);
+
+		switch (direction) {
+			case 'left':
+				unit.body.moveLeft(this.basic_speed);
+				break;
+			case 'right':
+				unit.body.moveRight(this.basic_speed);
+				break;
+			case 'top':
+				unit.body.moveUp(this.basic_speed);
+				break;
+			case 'bottom':
+				unit.body.moveDown(this.basic_speed);
+				break;
+		}
 	},
 
 	collectBountyRune: function collectBountyRune(body1, body2, fixture1, fixture2, begin) {
