@@ -7,6 +7,7 @@ var game_settings = {
 	time_to_scores: 10,
 	haste_time: 10,
 	floors: null,
+<<<<<<< HEAD
 	map: null,
 	basic_speed: 200,
 	enemies: [],
@@ -19,21 +20,37 @@ var game_settings = {
 		this.game.load.image('ground', '/images/ground_40.jpg');
 		this.game.load.image('bounty_rune', '/images/bounty_rune_38.png');
 		this.game.load.image('haste_rune', '/images/haste_rune_38.png');
+=======
+
+	preload: function() {
+		this.game.load.image('aegis', '/images/aegis_26.png');
+		this.game.load.image('water', '/images/water_34.jpg');
+		this.game.load.image('ground', '/images/ground_34.jpg');
+		this.game.load.image('bounty_rune', '/images/bounty_rune_32.png');
+		this.game.load.image('haste_rune', '/images/haste_rune_32.png');
+>>>>>>> 27de90c47e0b253382de4e367dc82ddad4c45487
 	},
 
 
 	create: function() {
 		// Получаем данные для лабиринта
+<<<<<<< HEAD
 		this.map = getMaze(false);
+=======
+		let map = getMaze(false);
+>>>>>>> 27de90c47e0b253382de4e367dc82ddad4c45487
 
 
 		// Создаем группы под пол и воду
 		let wallsGroup = this.game.add.physicsGroup(Phaser.Physics.BOX2D);
 		let floorsGroup = this.game.add.group();
+<<<<<<< HEAD
 		let enemiesGroup = this.game.add.physicsGroup(Phaser.Physics.BOX2D);
 		enemiesGroup.filter.groupIndex = -8;
 
 		// enemiesGroup.filter.groupIndex = -8;
+=======
+>>>>>>> 27de90c47e0b253382de4e367dc82ddad4c45487
 
 
 		// Заводим физику
@@ -127,7 +144,6 @@ var game_settings = {
 				_game.enemyMove(enemy, _game.enemyGetPossibleWay(enemy));
 			});
 		}
-
 	},
 
 

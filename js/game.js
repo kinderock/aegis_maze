@@ -148,8 +148,8 @@ var game_settings = {
 
 	startTimer: function startTimer() {
 		var _game = this,
-		    passed_time = 0,
-		    time_to_scores = _game.time_to_scores;
+				passed_time = 0,
+				time_to_scores = _game.time_to_scores;
 
 		clearInterval(_game.game_timer);
 		_game = setInterval(function () {
@@ -183,9 +183,9 @@ var game_settings = {
 		var _game = this;
 
 		var rune_obj = null,
-		    rune_type = '',
-		    rune_callback = null,
-		    rune_cell = this.getRandomFloor(_game.floors);
+				rune_type = '',
+				rune_callback = null,
+				rune_cell = this.getRandomFloor(_game.floors);
 
 		switch (rune) {
 			case 'bounty_rune':
@@ -209,8 +209,8 @@ var game_settings = {
 		var _game = this;
 
 		var enemy = null,
-		    enemy_callback = _game.detectEnemy,
-		    enemy_cell = this.getRandomFloor(_game.floors);
+				enemy_callback = _game.detectEnemy,
+				enemy_cell = this.getRandomFloor(_game.floors);
 
 		enemy = enemiesGroup.create(enemy_cell.position.x + CELL_SIZE / 2, enemy_cell.position.y + CELL_SIZE / 2, 'enemy');
 		_game.game.physics.box2d.enable(enemy);
@@ -239,9 +239,9 @@ var game_settings = {
 
 	enemyGetPossibleWay: function enemyGetPossibleWay(unit) {
 		var nearby_cells = {},
-		    possible_way = [],
-		    cell_x = Math.floor(unit.position.x / CELL_SIZE),
-		    cell_y = Math.floor(unit.position.y / CELL_SIZE);
+				possible_way = [],
+				cell_x = Math.floor(unit.position.x / CELL_SIZE),
+				cell_y = Math.floor(unit.position.y / CELL_SIZE);
 		console.log('cell_x', cell_x);
 		console.log('cell_y', cell_y);
 		nearby_cells['left'] = cell_x - 1 >= 0 ? this.map[cell_x - 1][cell_y] : 'end';
