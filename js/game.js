@@ -36,6 +36,7 @@ var game_settings = {
 	map: null,
 	basic_speed: 200,
 	enemies: [],
+	possible_ways: null,
 
 	preload: function preload() {
 		this.game.load.image('aegis', '/images/aegis_38.png');
@@ -53,6 +54,11 @@ var game_settings = {
 		// Создаем группы под пол и воду
 		var wallsGroup = this.game.add.physicsGroup(Phaser.Physics.BOX2D);
 		var floorsGroup = this.game.add.group();
+		var enemiesGroup = this.game.add.physicsGroup(Phaser.Physics.BOX2D);
+		enemiesGroup.filter.groupIndex = -8;
+
+		// enemiesGroup.filter.groupIndex = -8;
+
 
 		// Заводим физику
 		this.game.physics.startSystem(Phaser.Physics.BOX2D);
@@ -95,8 +101,12 @@ var game_settings = {
 		// Создаем хаст руну
 		this.drawRunes('haste_rune');
 
-		// Создаем хаст руну
-		this.drawEnemy();
+		// Создаем врагов
+		// for (let i = 0; i < 6; i++) {
+		this.drawEnemy(enemiesGroup);
+		// }
+		// enemiesGroup.z = -1;
+		console.log('enemiesGroup', enemiesGroup);
 
 		// Создаем отслеживание нажатий на клавиатуру
 		this.cursors = this.game.input.keyboard.createCursorKeys();
@@ -138,8 +148,8 @@ var game_settings = {
 
 	startTimer: function startTimer() {
 		var _game = this,
-		    passed_time = 0,
-		    time_to_scores = _game.time_to_scores;
+				passed_time = 0,
+				time_to_scores = _game.time_to_scores;
 
 		clearInterval(_game.game_timer);
 		_game = setInterval(function () {
@@ -173,9 +183,9 @@ var game_settings = {
 		var _game = this;
 
 		var rune_obj = null,
-		    rune_type = '',
-		    rune_callback = null,
-		    rune_cell = this.getRandomFloor(_game.floors);
+				rune_type = '',
+				rune_callback = null,
+				rune_cell = this.getRandomFloor(_game.floors);
 
 		switch (rune) {
 			case 'bounty_rune':
@@ -194,38 +204,48 @@ var game_settings = {
 		_game.aegis.body.setBodyContactCallback(rune_obj, rune_callback, this);
 	},
 
-	drawEnemy: function drawEnemy() {
+	drawEnemy: function drawEnemy(enemiesGroup) {
 		// https://github.com/bxia/Javascript-Pacman/blob/master/Ghost.js
 		var _game = this;
 
 		var enemy = null,
-		    enemy_callback = _game.detectEnemy,
-		    enemy_cell = this.getRandomFloor(_game.floors);
+				enemy_callback = _game.detectEnemy,
+				enemy_cell = this.getRandomFloor(_game.floors);
 
-		enemy = this.game.add.sprite(enemy_cell.position.x + CELL_SIZE / 2, enemy_cell.position.y + CELL_SIZE / 2, 'enemy');
+		enemy = enemiesGroup.create(enemy_cell.position.x + CELL_SIZE / 2, enemy_cell.position.y + CELL_SIZE / 2, 'enemy');
 		_game.game.physics.box2d.enable(enemy);
+		// enemy.body.bodyDef.filter.categoryBits = 0x0002;
+		// console.log('enemiesGroup', enemiesGroup);
+		// console.log('enemiesGroup', enemiesGroup.filter);
+		// console.log('enemy', enemy);
 		enemy.body.fixedRotation = true;
 		enemy.body.setCircle(CELL_SIZE / 2 - 1);
-		enemy.body.collideWorldBounds = true;
+		// enemy.body.collideWorldBounds = true;
 		enemy.move_direction = null;
-		_game.aegis.body.setBodyContactCallback(enemy, enemy_callback, this);
+		// enemy.filter.maskBits = 0x0002;
+		// _game.aegis.body.setBodyContactCallback(enemy, enemy_callback, this);
 
 		_game.enemies.push(enemy);
 	},
 
 	detectEnemy: function detectEnemy() {
 		console.log('ssss dddd');
+		console.log('ssss dddd');
+		console.log('ssss dddd');
+		console.log('ssss dddd');
+		console.log('ssss dddd');
+		console.log('ssss dddd');
 	},
 
 	enemyGetPossibleWay: function enemyGetPossibleWay(unit) {
 		var nearby_cells = {},
-		    possible_way = [],
-		    cell_x = Math.floor(unit.position.x / CELL_SIZE),
-		    cell_y = Math.floor(unit.position.y / CELL_SIZE);
+				possible_way = [],
+				cell_x = Math.floor(unit.position.x / CELL_SIZE),
+				cell_y = Math.floor(unit.position.y / CELL_SIZE);
 		console.log('cell_x', cell_x);
 		console.log('cell_y', cell_y);
-		nearby_cells['left'] = this.map[cell_x - 1][cell_y];
-		nearby_cells['right'] = this.map[cell_x + 1][cell_y];
+		nearby_cells['left'] = cell_x - 1 >= 0 ? this.map[cell_x - 1][cell_y] : 'end';
+		nearby_cells['right'] = cell_x + 1 < game_settings.map.length ? this.map[cell_x + 1][cell_y] : 'end';
 		nearby_cells['top'] = this.map[cell_x][cell_y - 1];
 		nearby_cells['bottom'] = this.map[cell_x][cell_y + 1];
 
@@ -240,6 +260,11 @@ var game_settings = {
 		var direction = unit.move_direction || null;
 		console.log('possible_way ->', possible_way);
 
+		if (this.possible_ways !== possible_way) {
+			this.possible_ways = possible_way;
+		}
+		console.log('saved way --', this.possible_ways);
+
 		if (!direction) {
 			direction = possible_way[Math.floor(Math.random() * possible_way.length)];
 			unit.move_direction = direction;
@@ -252,6 +277,7 @@ var game_settings = {
 		}
 
 		console.log('direction --', direction);
+		console.log('===============');
 
 		switch (direction) {
 			case 'left':
