@@ -12,12 +12,12 @@ var game_settings = {
 	enemies: [],
 
 	preload: function() {
-		this.game.load.image('aegis', '/images/aegis_26.png');
-		this.game.load.image('enemy', '/images/enemy_26.png');
-		this.game.load.image('water', '/images/water_34.jpg');
-		this.game.load.image('ground', '/images/ground_34.jpg');
-		this.game.load.image('bounty_rune', '/images/bounty_rune_32.png');
-		this.game.load.image('haste_rune', '/images/haste_rune_32.png');
+		this.game.load.image('aegis', '/images/aegis_38.png');
+		this.game.load.image('enemy', '/images/enemy_38.png');
+		this.game.load.image('water', '/images/water_40.jpg');
+		this.game.load.image('ground', '/images/ground_40.jpg');
+		this.game.load.image('bounty_rune', '/images/bounty_rune_38.png');
+		this.game.load.image('haste_rune', '/images/haste_rune_38.png');
 	},
 
 

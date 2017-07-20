@@ -3,9 +3,21 @@
 var maze = document.getElementById('maze');
 var maze_info = localStorage.maze ? JSON.parse(localStorage.maze) : [];
 
-var CELL_HEIGHT = 21;
-var CELL_WIDTH = 35;
-var CELL_SIZE = 34;
+// Maze with cell 40*40
+var CELL_HEIGHT = 17;
+var CELL_WIDTH = 29;
+var CELL_SIZE = 40;
+
+// // Maze with cell 45*45
+// const CELL_HEIGHT = 15;
+// const CELL_WIDTH = 25;
+// const CELL_SIZE = 45;
+//
+// // Maze with cell 34*34
+// const CELL_HEIGHT = 21;
+// const CELL_WIDTH = 35;
+// const CELL_SIZE = 34;
+
 var RANDOM_CELL_COUNT = 20;
 var TOTAL_HEIGHT = CELL_HEIGHT * CELL_SIZE;
 var TOTAL_WIDTH = CELL_WIDTH * CELL_SIZE;
@@ -26,12 +38,12 @@ var game_settings = {
 	enemies: [],
 
 	preload: function preload() {
-		this.game.load.image('aegis', '/images/aegis_26.png');
-		this.game.load.image('enemy', '/images/enemy_26.png');
-		this.game.load.image('water', '/images/water_34.jpg');
-		this.game.load.image('ground', '/images/ground_34.jpg');
-		this.game.load.image('bounty_rune', '/images/bounty_rune_32.png');
-		this.game.load.image('haste_rune', '/images/haste_rune_32.png');
+		this.game.load.image('aegis', '/images/aegis_38.png');
+		this.game.load.image('enemy', '/images/enemy_38.png');
+		this.game.load.image('water', '/images/water_40.jpg');
+		this.game.load.image('ground', '/images/ground_40.jpg');
+		this.game.load.image('bounty_rune', '/images/bounty_rune_38.png');
+		this.game.load.image('haste_rune', '/images/haste_rune_38.png');
 	},
 
 	create: function create() {
