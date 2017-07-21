@@ -10,7 +10,12 @@ var game_settings = {
 	map: null,
 	basic_speed: 200,
 	enemies: [],
-	possible_ways: null,
+	// ways_opposites: {
+	// 	left: 'right',
+	// 	right: 'left',
+	// 	top: 'bottom',
+	// 	bottom: 'top'
+	// },
 
 	preload: function() {
 		this.game.load.image('aegis', '/images/aegis_38.png');
@@ -201,6 +206,8 @@ var game_settings = {
 		enemy.body.setCircle(CELL_SIZE/2 - 1);
 		// enemy.body.collideWorldBounds = true;
 		enemy.move_direction = null;
+		enemy.previous_cell = null;
+		enemy.possible_ways = null;
 		// enemy.filter.maskBits = 0x0002;
 		// _game.aegis.body.setBodyContactCallback(enemy, enemy_callback, this);
 
@@ -240,19 +247,34 @@ var game_settings = {
 
 	enemyMove: function(unit, possible_way) {
 		let direction = unit.move_direction || null;
-		console.log('possible_way ->', possible_way);
 
-		if (this.possible_ways !== possible_way) {
-			this.possible_ways = possible_way;
-		}
-				console.log('saved way --', this.possible_ways);
+		// if (possible_way.length > 1 && unit.previous_cell && possible_way.indexOf(unit.previous_cell) !== -1) {
+		// 	possible_way.splice(possible_way.indexOf(unit.previous_cell), 1)
+		// }
+		console.log('possible_way ->', possible_way);
+		console.log('unit saved way --', unit.possible_ways);
+		// if (!direction || unit.possible_ways !== possible_way) {
+		// 	unit.possible_ways = possible_way;
+		// }
 
 		if (!direction) {
 			direction = possible_way[Math.floor(Math.random() * possible_way.length)];
 			unit.move_direction = direction;
+			unit.possible_ways = possible_way;
 		} else {
 			if (possible_way.filter((way) => { return way === direction}).length == 0) {
 				unit.move_direction = null;
+			}
+			console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!');
+			console.log('><><><><><><><><><><><><><');
+			console.log(JSON.stringify(possible_way) !==  JSON.stringify(unit.possible_ways));
+			console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!');
+
+			if (JSON.stringify(possible_way) !==  JSON.stringify(unit.possible_ways)) {
+				console.log('CHANGED!!!!!');
+				console.log('CHANGED!!!!!');
+				console.log('CHANGED!!!!!');
+				unit.possible_ways = possible_way;
 			}
 		}
 
@@ -273,6 +295,8 @@ var game_settings = {
 				unit.body.moveDown(this.basic_speed);
 				break;
 		}
+
+		// unit.previous_cell = this.ways_opposites[direction];
 	},
 
 
