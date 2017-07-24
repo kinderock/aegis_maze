@@ -91,6 +91,10 @@ var game_settings = {
 		// enemiesGroup.z = -1;
 		console.log('enemiesGroup', enemiesGroup);
 
+		this.enemies.forEach((enemy) => {
+			game_settings.enemyGetPossibleWay(enemy);
+			// _game.enemyMove(enemy, _game.enemyGetPossibleWay(enemy));
+		});
 
 		// Создаем отслеживание нажатий на клавиатуру
 		this.cursors = this.game.input.keyboard.createCursorKeys();
@@ -125,11 +129,11 @@ var game_settings = {
 			this.startTimer();
 		}
 
-		if (this.start_game) {
-			this.enemies.forEach((enemy) => {
-				_game.enemyMove(enemy, _game.enemyGetPossibleWay(enemy));
-			});
-		}
+		// if (this.start_game) {
+		// 	this.enemies.forEach((enemy) => {
+		// 		_game.enemyMove(enemy, _game.enemyGetPossibleWay(enemy));
+		// 	});
+		// }
 	},
 
 
@@ -226,18 +230,25 @@ var game_settings = {
 
 
 	enemyGetPossibleWay: function(unit) {
+		const valid = (a, b) => a < this.map.length && a >= 0 && b < this.map[0].length && b >= 0;
+		const cell_num = (position) => Math.floor(position / CELL_SIZE);
+
 		let	nearby_cells = {},
 				possible_way = [],
-				cell_x = Math.floor(unit.position.x / CELL_SIZE),
-				cell_y = Math.floor(unit.position.y / CELL_SIZE);
+				cell_x = cell_num(unit.position.x),
+				cell_y = cell_num(unit.position.y),
+				aegis_position = {x: cell_num(this.aegis.position.x), y: cell_num(this.aegis.position.y)};
+
 				console.log('cell_x', cell_x);
 				console.log('cell_y', cell_y);
+				console.log('this aegis_position', aegis_position);
+
 		nearby_cells['left']   = (cell_x - 1 >= 0) ? this.map[cell_x - 1][cell_y] : 'end';
-		nearby_cells['right']  = (cell_x + 1 < game_settings.map.length) ? this.map[cell_x + 1][cell_y] : 'end';
+		nearby_cells['right']  = (cell_x + 1 < this.map.length) ? this.map[cell_x + 1][cell_y] : 'end';
 		nearby_cells['top']    = this.map[cell_x][cell_y - 1];
 		nearby_cells['bottom'] = this.map[cell_x][cell_y + 1];
 
-		for (var cell in nearby_cells) {
+		for (let cell in nearby_cells) {
 			if (nearby_cells[cell] === 'floor') possible_way.push(cell);
 		}
 
@@ -246,6 +257,9 @@ var game_settings = {
 
 
 	enemyMove: function(unit, possible_way) {
+		console.log('======================');
+		// https://github.com/kinderock/holyjsgame-2017/blob/master/stage/strategies/tinkoff_strelnikov.js
+		/**
 		let direction = unit.move_direction || null;
 
 		// if (possible_way.length > 1 && unit.previous_cell && possible_way.indexOf(unit.previous_cell) !== -1) {
@@ -297,6 +311,7 @@ var game_settings = {
 		}
 
 		// unit.previous_cell = this.ways_opposites[direction];
+		**/
 	},
 
 

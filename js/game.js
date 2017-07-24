@@ -110,6 +110,11 @@ var game_settings = {
 		// enemiesGroup.z = -1;
 		console.log('enemiesGroup', enemiesGroup);
 
+		this.enemies.forEach(function (enemy) {
+			game_settings.enemyGetPossibleWay(enemy);
+			// _game.enemyMove(enemy, _game.enemyGetPossibleWay(enemy));
+		});
+
 		// Создаем отслеживание нажатий на клавиатуру
 		this.cursors = this.game.input.keyboard.createCursorKeys();
 	},
@@ -141,11 +146,11 @@ var game_settings = {
 			this.startTimer();
 		}
 
-		if (this.start_game) {
-			this.enemies.forEach(function (enemy) {
-				_game.enemyMove(enemy, _game.enemyGetPossibleWay(enemy));
-			});
-		}
+		// if (this.start_game) {
+		// 	this.enemies.forEach((enemy) => {
+		// 		_game.enemyMove(enemy, _game.enemyGetPossibleWay(enemy));
+		// 	});
+		// }
 	},
 
 	startTimer: function startTimer() {
@@ -242,14 +247,27 @@ var game_settings = {
 	},
 
 	enemyGetPossibleWay: function enemyGetPossibleWay(unit) {
+		var _this = this;
+
+		var valid = function valid(a, b) {
+			return a < _this.map.length && a >= 0 && b < _this.map[0].length && b >= 0;
+		};
+		var cell_num = function cell_num(position) {
+			return Math.floor(position / CELL_SIZE);
+		};
+
 		var nearby_cells = {},
 		    possible_way = [],
-		    cell_x = Math.floor(unit.position.x / CELL_SIZE),
-		    cell_y = Math.floor(unit.position.y / CELL_SIZE);
+		    cell_x = cell_num(unit.position.x),
+		    cell_y = cell_num(unit.position.y),
+		    aegis_position = { x: cell_num(this.aegis.position.x), y: cell_num(this.aegis.position.y) };
+
 		console.log('cell_x', cell_x);
 		console.log('cell_y', cell_y);
+		console.log('this aegis_position', aegis_position);
+
 		nearby_cells['left'] = cell_x - 1 >= 0 ? this.map[cell_x - 1][cell_y] : 'end';
-		nearby_cells['right'] = cell_x + 1 < game_settings.map.length ? this.map[cell_x + 1][cell_y] : 'end';
+		nearby_cells['right'] = cell_x + 1 < this.map.length ? this.map[cell_x + 1][cell_y] : 'end';
 		nearby_cells['top'] = this.map[cell_x][cell_y - 1];
 		nearby_cells['bottom'] = this.map[cell_x][cell_y + 1];
 
@@ -261,59 +279,55 @@ var game_settings = {
 	},
 
 	enemyMove: function enemyMove(unit, possible_way) {
-		var direction = unit.move_direction || null;
-
-		// if (possible_way.length > 1 && unit.previous_cell && possible_way.indexOf(unit.previous_cell) !== -1) {
-		// 	possible_way.splice(possible_way.indexOf(unit.previous_cell), 1)
-		// }
-		console.log('possible_way ->', possible_way);
-		console.log('unit saved way --', unit.possible_ways);
-		// if (!direction || unit.possible_ways !== possible_way) {
-		// 	unit.possible_ways = possible_way;
-		// }
-
-		if (!direction) {
-			direction = possible_way[Math.floor(Math.random() * possible_way.length)];
-			unit.move_direction = direction;
-			unit.possible_ways = possible_way;
-		} else {
-			if (possible_way.filter(function (way) {
-				return way === direction;
-			}).length == 0) {
-				unit.move_direction = null;
-			}
-			console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!');
-			console.log('><><><><><><><><><><><><><');
-			console.log(JSON.stringify(possible_way) !== JSON.stringify(unit.possible_ways));
-			console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!');
-
-			if (JSON.stringify(possible_way) !== JSON.stringify(unit.possible_ways)) {
-				console.log('CHANGED!!!!!');
-				console.log('CHANGED!!!!!');
-				console.log('CHANGED!!!!!');
-				unit.possible_ways = possible_way;
-			}
-		}
-
-		console.log('direction --', direction);
-		console.log('===============');
-
-		switch (direction) {
-			case 'left':
-				unit.body.moveLeft(this.basic_speed);
-				break;
-			case 'right':
-				unit.body.moveRight(this.basic_speed);
-				break;
-			case 'top':
-				unit.body.moveUp(this.basic_speed);
-				break;
-			case 'bottom':
-				unit.body.moveDown(this.basic_speed);
-				break;
-		}
-
-		// unit.previous_cell = this.ways_opposites[direction];
+		console.log('======================');
+		// https://github.com/kinderock/holyjsgame-2017/blob/master/stage/strategies/tinkoff_strelnikov.js
+		/**
+  let direction = unit.move_direction || null;
+  		// if (possible_way.length > 1 && unit.previous_cell && possible_way.indexOf(unit.previous_cell) !== -1) {
+  // 	possible_way.splice(possible_way.indexOf(unit.previous_cell), 1)
+  // }
+  console.log('possible_way ->', possible_way);
+  console.log('unit saved way --', unit.possible_ways);
+  // if (!direction || unit.possible_ways !== possible_way) {
+  // 	unit.possible_ways = possible_way;
+  // }
+  		if (!direction) {
+  	direction = possible_way[Math.floor(Math.random() * possible_way.length)];
+  	unit.move_direction = direction;
+  	unit.possible_ways = possible_way;
+  } else {
+  	if (possible_way.filter((way) => { return way === direction}).length == 0) {
+  		unit.move_direction = null;
+  	}
+  	console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!');
+  	console.log('><><><><><><><><><><><><><');
+  	console.log(JSON.stringify(possible_way) !==  JSON.stringify(unit.possible_ways));
+  	console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!');
+  			if (JSON.stringify(possible_way) !==  JSON.stringify(unit.possible_ways)) {
+  		console.log('CHANGED!!!!!');
+  		console.log('CHANGED!!!!!');
+  		console.log('CHANGED!!!!!');
+  		unit.possible_ways = possible_way;
+  	}
+  }
+  		console.log('direction --', direction);
+  console.log('===============');
+  		switch (direction) {
+  	case 'left':
+  		unit.body.moveLeft(this.basic_speed);
+  		break;
+  	case 'right':
+  		unit.body.moveRight(this.basic_speed);
+  		break;
+  	case 'top':
+  		unit.body.moveUp(this.basic_speed);
+  		break;
+  	case 'bottom':
+  		unit.body.moveDown(this.basic_speed);
+  		break;
+  }
+  		// unit.previous_cell = this.ways_opposites[direction];
+  **/
 	},
 
 	collectBountyRune: function collectBountyRune(body1, body2, fixture1, fixture2, begin) {
