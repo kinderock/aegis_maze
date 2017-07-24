@@ -23,6 +23,11 @@ var TOTAL_HEIGHT = CELL_HEIGHT * CELL_SIZE;
 var TOTAL_WIDTH = CELL_WIDTH * CELL_SIZE;
 var WALL = 'wall';
 var FLOOR = 'floor';
+var cell_num = function cell_num(position) {
+	return Math.floor(position / CELL_SIZE);
+};
+
+// const valid = (a, b, map) => Array.isArray(map) && a < map.length && a >= 0 && b < map[0].length && b >= 0;
 
 var game_settings = {
 	aegis_haste: false,
@@ -36,6 +41,23 @@ var game_settings = {
 	map: null,
 	basic_speed: 200,
 	enemies: [],
+	ground_codes: {
+		'right_bottom': 0,
+		'right_top': 1,
+		'left_top': 2,
+		'left_bottom': 3,
+		'right_top_bottom': 4,
+		'left_right_top': 5,
+		'left_right_bottom': 6,
+		'left_top_bottom': 7,
+		'right': 8,
+		'top': 9,
+		'bottom': 10,
+		'left': 11,
+		'left_right': 12,
+		'top_bottom': 13,
+		'left_right_top_bottom': 14
+	},
 	// ways_opposites: {
 	// 	left: 'right',
 	// 	right: 'left',
@@ -46,8 +68,10 @@ var game_settings = {
 	preload: function preload() {
 		this.game.load.image('aegis', '/images/aegis_38.png');
 		this.game.load.image('enemy', '/images/enemy_38.png');
-		this.game.load.image('water', '/images/water_40.jpg');
-		this.game.load.image('ground', '/images/ground_40.jpg');
+
+		this.game.load.spritesheet('ground', '/images/ground.png', CELL_SIZE, CELL_SIZE, 15);
+		this.game.load.spritesheet('aegis', '/images/aegis.png', CELL_SIZE - 2, CELL_SIZE - 2, 10);
+		this.game.load.image('water', '/images/water.png');
 		this.game.load.image('bounty_rune', '/images/bounty_rune_38.png');
 		this.game.load.image('haste_rune', '/images/haste_rune_38.png');
 	},
@@ -77,6 +101,7 @@ var game_settings = {
 					wall.body.static = true;
 				} else {
 					var floor = floorsGroup.create(x * CELL_SIZE, y * CELL_SIZE, "ground");
+					floor.frame = this.getGroundSprite(x, y);
 				}
 			}
 		}
@@ -124,21 +149,38 @@ var game_settings = {
 	},
 
 	update: function update() {
+		var _this = this;
+
+		var getAegisFrame = function getAegisFrame(frame) {
+			return !_this.aegis_haste ? frame : frame + 5;
+		};
+
 		var speed = this.aegis_haste ? this.basic_speed * 2 : this.basic_speed;
 		var _game = this;
 
+		if (this.aegis_haste) {
+			document.getElementById('maze').classList.add('invisible');
+		} else {
+			document.getElementById('maze').classList.remove('invisible');
+		}
+
 		this.aegis.body.setZeroVelocity();
+		this.aegis.frame = getAegisFrame(0);
 
 		if (this.cursors.left.isDown) {
 			this.aegis.body.moveLeft(speed);
+			this.aegis.frame = getAegisFrame(1);
 		} else if (this.cursors.right.isDown) {
 			this.aegis.body.moveRight(speed);
+			this.aegis.frame = getAegisFrame(2);
 		}
 
 		if (this.cursors.up.isDown) {
 			this.aegis.body.moveUp(speed);
+			this.aegis.frame = getAegisFrame(3);
 		} else if (this.cursors.down.isDown) {
 			this.aegis.body.moveDown(speed);
+			this.aegis.frame = getAegisFrame(4);
 		}
 
 		if (!this.start_game && (this.aegis.position.x !== this.aegis.start_position.x || this.aegis.position.y !== this.aegis.start_position.y)) {
@@ -182,8 +224,32 @@ var game_settings = {
 		}, 10);
 	},
 
+	getGroundSprite: function getGroundSprite(mapX, mapY) {
+		var neighbours = {};
+		var cell_code = '';
+		var ground_frame = 0;
+
+		neighbours['left'] = mapX - 1 >= 0 && this.map[mapX - 1][mapY] === 'floor' ? true : false;
+		neighbours['right'] = mapX + 1 < this.map.length && this.map[mapX + 1][mapY] === 'floor' ? true : false;
+		neighbours['top'] = mapY - 1 >= 0 && this.map[mapX][mapY - 1] === 'floor' ? true : false;
+		neighbours['bottom'] = mapY + 1 < this.map[0].length && this.map[mapX][mapY + 1] === 'floor' ? true : false;
+
+		for (var direction in neighbours) {
+			if (neighbours[direction]) {
+				cell_code += direction + '_';
+			}
+		}
+		cell_code = cell_code.slice(0, -1);
+
+		return this.ground_codes[cell_code] || 0;
+	},
+
 	getRandomFloor: function getRandomFloor(floors) {
 		return floors.children[Math.floor(Math.random() * floors.children.length)];
+	},
+
+	checkValidCell: function checkValidCell(a, b) {
+		return a < this.map.length && a >= 0 && b < this.map[0].length && b >= 0;
 	},
 
 	drawRunes: function drawRunes(rune) {
@@ -247,14 +313,6 @@ var game_settings = {
 	},
 
 	enemyGetPossibleWay: function enemyGetPossibleWay(unit) {
-		var _this = this;
-
-		var valid = function valid(a, b) {
-			return a < _this.map.length && a >= 0 && b < _this.map[0].length && b >= 0;
-		};
-		var cell_num = function cell_num(position) {
-			return Math.floor(position / CELL_SIZE);
-		};
 
 		var nearby_cells = {},
 		    possible_way = [],

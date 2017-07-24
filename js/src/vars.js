@@ -21,3 +21,6 @@ const TOTAL_HEIGHT = CELL_HEIGHT * CELL_SIZE;
 const TOTAL_WIDTH = CELL_WIDTH * CELL_SIZE;
 const WALL = 'wall';
 const FLOOR = 'floor';
+const cell_num = (position) => Math.floor(position / CELL_SIZE);
+
+// const valid = (a, b, map) => Array.isArray(map) && a < map.length && a >= 0 && b < map[0].length && b >= 0;
