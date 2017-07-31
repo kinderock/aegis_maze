@@ -122,7 +122,7 @@ var game_settings = {
 
 
 	render: function () {
-		// this.game.debug.box2dWorld(); // For debug
+		this.game.debug.box2dWorld(); // For debug
 	},
 
 
@@ -291,27 +291,101 @@ var game_settings = {
 
 
 	enemyGetPossibleWay: function(unit) {
+		const maze = this.map;
+		const valid = (a,b) => a < maze.length && a >= 0 && b < maze[0].length && b >= 0;
+		const key = (x, y) => `${x}-${y}`;
+		let paths = {};
+		let notVisited = [];
+		let distances = {};
+
 
 		let	nearby_cells = {},
 				possible_way = [],
-				cell_x = cell_num(unit.position.x),
-				cell_y = cell_num(unit.position.y),
+				unitX = cell_num(unit.position.x),
+				unitY = cell_num(unit.position.y),
 				aegis_position = {x: cell_num(this.aegis.position.x), y: cell_num(this.aegis.position.y)};
 
-				console.log('cell_x', cell_x);
-				console.log('cell_y', cell_y);
-				console.log('this aegis_position', aegis_position);
+		paths[key(unitX,unitY)] = [[unitX,unitY]];
 
-		nearby_cells['left']   = (cell_x - 1 >= 0) ? this.map[cell_x - 1][cell_y] : 'end';
-		nearby_cells['right']  = (cell_x + 1 < this.map.length) ? this.map[cell_x + 1][cell_y] : 'end';
-		nearby_cells['top']    = this.map[cell_x][cell_y - 1];
-		nearby_cells['bottom'] = this.map[cell_x][cell_y + 1];
-
-		for (let cell in nearby_cells) {
-			if (nearby_cells[cell] === 'floor') possible_way.push(cell);
+		for (let x = 0; x < maze.length; x++) {
+			for (let y = 0; y < maze[0].length; y++) {
+				distances[key(x,y)] = Infinity;
+				notVisited.push([x,y])
+			}
 		}
 
-		return possible_way
+				console.log('unitX', unitX);
+				console.log('unitY', unitY);
+				console.log('this aegis_position', aegis_position);
+				console.log('paths', paths);
+				console.log('distances', distances);
+				console.log('notVisited', notVisited);
+				console.log('===========STEP 2 ===========');
+
+
+		distances[key(unitX,unitY)] = 0;
+
+		function update(currX, currY, nextX, nextY) {
+			console.log('aaa');
+			if (!valid(currX, currY) || !valid(nextX, nextY)) {
+				return
+			}
+			console.log('bbb');
+
+			const currentDistance = !maze[currX][currY] && !maze[nextX][nextY] ? 1 : Infinity;
+			console.log('currentDistance',currentDistance);
+			if (distances[key(nextX, nextY)] > currentDistance + distances[key(currX, currY)]) {
+				console.log(currX, currY, nextX, nextY);
+				paths[key(nextX, nextY)] = paths[key(currX, currY)].concat([[nextX, nextY]]);
+				distances[key(nextX, nextY)] = distances[key(currX, currY)] + currentDistance;
+			}
+		}
+
+		while(notVisited.length) {
+			notVisited.sort(
+				(
+					[x1, y1],
+					[x2, y2]
+				) => distances[key(x1,y1)] - distances[key(x2, y2)] || 0
+			);
+			const [currX, currY] = notVisited.shift();
+			console.log('[currX, currY]', currX, currY);
+			update(currX, currY, currX + 1, currY);
+			update(currX, currY, currX - 1, currY);
+			update(currX, currY, currX, currY + 1);
+			update(currX, currY, currX, currY - 1);
+		}
+
+		const resultPath = paths[key(aegis_position.x, aegis_position.y)];
+		const finalCommands = [];
+
+		console.log('paths', paths);
+		console.log('distances', distances);
+		console.log('notVisited', notVisited);
+		console.log('resultPath', resultPath);
+
+
+
+
+
+
+
+
+
+
+
+
+
+		// nearby_cells['left']   = (cell_x - 1 >= 0) ? this.map[cell_x - 1][cell_y] : 'end';
+		// nearby_cells['right']  = (cell_x + 1 < this.map.length) ? this.map[cell_x + 1][cell_y] : 'end';
+		// nearby_cells['top']    = this.map[cell_x][cell_y - 1];
+		// nearby_cells['bottom'] = this.map[cell_x][cell_y + 1];
+		//
+		// for (let cell in nearby_cells) {
+		// 	if (nearby_cells[cell] === 'floor') possible_way.push(cell);
+		// }
+		//
+		// return possible_way
 	},
 
 

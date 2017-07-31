@@ -1,5 +1,7 @@
 'use strict';
 
+var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
+
 var maze = document.getElementById('maze');
 var maze_info = localStorage.maze ? JSON.parse(localStorage.maze) : [];
 
@@ -145,7 +147,7 @@ var game_settings = {
 	},
 
 	render: function render() {
-		// this.game.debug.box2dWorld(); // For debug
+		this.game.debug.box2dWorld(); // For debug
 	},
 
 	update: function update() {
@@ -313,27 +315,101 @@ var game_settings = {
 	},
 
 	enemyGetPossibleWay: function enemyGetPossibleWay(unit) {
+		var maze = this.map;
+		var valid = function valid(a, b) {
+			return a < maze.length && a >= 0 && b < maze[0].length && b >= 0;
+		};
+		var key = function key(x, y) {
+			return x + '-' + y;
+		};
+		var paths = {};
+		var notVisited = [];
+		var distances = {};
 
 		var nearby_cells = {},
 		    possible_way = [],
-		    cell_x = cell_num(unit.position.x),
-		    cell_y = cell_num(unit.position.y),
+		    unitX = cell_num(unit.position.x),
+		    unitY = cell_num(unit.position.y),
 		    aegis_position = { x: cell_num(this.aegis.position.x), y: cell_num(this.aegis.position.y) };
 
-		console.log('cell_x', cell_x);
-		console.log('cell_y', cell_y);
-		console.log('this aegis_position', aegis_position);
+		paths[key(unitX, unitY)] = [[unitX, unitY]];
 
-		nearby_cells['left'] = cell_x - 1 >= 0 ? this.map[cell_x - 1][cell_y] : 'end';
-		nearby_cells['right'] = cell_x + 1 < this.map.length ? this.map[cell_x + 1][cell_y] : 'end';
-		nearby_cells['top'] = this.map[cell_x][cell_y - 1];
-		nearby_cells['bottom'] = this.map[cell_x][cell_y + 1];
-
-		for (var cell in nearby_cells) {
-			if (nearby_cells[cell] === 'floor') possible_way.push(cell);
+		for (var x = 0; x < maze.length; x++) {
+			for (var y = 0; y < maze[0].length; y++) {
+				distances[key(x, y)] = Infinity;
+				notVisited.push([x, y]);
+			}
 		}
 
-		return possible_way;
+		console.log('unitX', unitX);
+		console.log('unitY', unitY);
+		console.log('this aegis_position', aegis_position);
+		console.log('paths', paths);
+		console.log('distances', distances);
+		console.log('notVisited', notVisited);
+		console.log('===========STEP 2 ===========');
+
+		distances[key(unitX, unitY)] = 0;
+
+		function update(currX, currY, nextX, nextY) {
+			console.log('aaa');
+			if (!valid(currX, currY) || !valid(nextX, nextY)) {
+				return;
+			}
+			console.log('bbb');
+
+			var currentDistance = !maze[currX][currY] && !maze[nextX][nextY] ? 1 : Infinity;
+			console.log('currentDistance', currentDistance);
+			if (distances[key(nextX, nextY)] > currentDistance + distances[key(currX, currY)]) {
+				console.log(currX, currY, nextX, nextY);
+				paths[key(nextX, nextY)] = paths[key(currX, currY)].concat([[nextX, nextY]]);
+				distances[key(nextX, nextY)] = distances[key(currX, currY)] + currentDistance;
+			}
+		}
+
+		while (notVisited.length) {
+			notVisited.sort(function (_ref, _ref2) {
+				var _ref4 = _slicedToArray(_ref, 2),
+				    x1 = _ref4[0],
+				    y1 = _ref4[1];
+
+				var _ref3 = _slicedToArray(_ref2, 2),
+				    x2 = _ref3[0],
+				    y2 = _ref3[1];
+
+				return distances[key(x1, y1)] - distances[key(x2, y2)] || 0;
+			});
+
+			var _notVisited$shift = notVisited.shift(),
+			    _notVisited$shift2 = _slicedToArray(_notVisited$shift, 2),
+			    currX = _notVisited$shift2[0],
+			    currY = _notVisited$shift2[1];
+
+			console.log('[currX, currY]', currX, currY);
+			update(currX, currY, currX + 1, currY);
+			update(currX, currY, currX - 1, currY);
+			update(currX, currY, currX, currY + 1);
+			update(currX, currY, currX, currY - 1);
+		}
+
+		var resultPath = paths[key(aegis_position.x, aegis_position.y)];
+		var finalCommands = [];
+
+		console.log('paths', paths);
+		console.log('distances', distances);
+		console.log('notVisited', notVisited);
+		console.log('resultPath', resultPath);
+
+		// nearby_cells['left']   = (cell_x - 1 >= 0) ? this.map[cell_x - 1][cell_y] : 'end';
+		// nearby_cells['right']  = (cell_x + 1 < this.map.length) ? this.map[cell_x + 1][cell_y] : 'end';
+		// nearby_cells['top']    = this.map[cell_x][cell_y - 1];
+		// nearby_cells['bottom'] = this.map[cell_x][cell_y + 1];
+		//
+		// for (let cell in nearby_cells) {
+		// 	if (nearby_cells[cell] === 'floor') possible_way.push(cell);
+		// }
+		//
+		// return possible_way
 	},
 
 	enemyMove: function enemyMove(unit, possible_way) {
